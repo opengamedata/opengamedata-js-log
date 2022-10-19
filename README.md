@@ -1,6 +1,6 @@
 # opengamedata-js-log
 
-Javascript package for logging with Field Day's OpenGameData.
+A Javascript service package for logging data in web games with OpenGameData's servers.
 
 ## Version Log
 
