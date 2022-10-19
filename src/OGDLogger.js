@@ -42,25 +42,25 @@ export const ModuleStatus = {
 };
 
 export class OGDLogger {
-  // state
-  m_Endpoint;
-  m_EventSequence = 0;
-  m_StatusFlags;
-  m_Settings;
-  m_ModuleStatus = [Object.keys(ModuleID).length];
-  // used when addeding custom params to an open event
-  m_EventCustomParamsBuffer = {};
-  // holds the current event stream as an array; this event will then be added to the toLogQueue and cleared the end of BeginEvent
-  m_EventStream = {};
-  // a standby Queue to hold LogEvents to submit to database on Flush()
-  m_toLogQueue = [];
-
-  static s_Instance;
-
   /**
    * @param {*} firebaseConfig (optional) - your app's Firebase project configuration object; If no object is provided, Firebase module will not be initialized
    */
   constructor(firebaseConfig = null) {
+    this.s_Instance;
+
+    this.m_Endpoint = null;
+    // state
+    this.m_EventSequence = 0;
+    this.m_StatusFlags = undefined;
+    this.m_Settings;
+    this.m_ModuleStatus = [Object.keys(ModuleID).length];
+    // used when addeding custom params to an open event
+    this.m_EventCustomParamsBuffer = {};
+    // holds the current event stream as an array; this event will then be added to the toLogQueue and cleared the end of BeginEvent
+    this.m_EventStream = {};
+    // a standby Queue to hold LogEvents to submit to database on Flush()
+    this.m_toLogQueue = [];
+
     this.m_Settings = SettingsFlags.Base64Encode;
     this.m_ModuleStatus[ModuleID.OGD] = ModuleStatus.Preparing;
 
@@ -368,6 +368,7 @@ export function LogEvent(EventName, EventParams) {
 
   for (const key in EventParams) {
     let value = EventParams[key];
+    // @ts-ignore
     OGDLogger.getInstance().WriteCustomEventParam(key, value);
   }
 }
