@@ -1,1 +1,1 @@
-export * from "./src/OGDLogger";
+export { LogEvent, OGDLogger } from "./src/OGDLogger";
