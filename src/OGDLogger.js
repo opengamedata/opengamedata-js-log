@@ -43,7 +43,7 @@ export const ModuleStatus = {
 
 export class OGDLogger {
   // state
-  m_Endpoint;
+  m_Endpoint = null;
   m_EventSequence = 0;
   m_StatusFlags;
   m_Settings;
@@ -368,6 +368,7 @@ export function LogEvent(EventName, EventParams) {
 
   for (const key in EventParams) {
     let value = EventParams[key];
+    // @ts-ignore
     OGDLogger.getInstance().WriteCustomEventParam(key, value);
   }
 }
