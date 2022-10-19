@@ -312,6 +312,7 @@ export class OGDLogger {
         );
       }
 
+      // @ts-ignore
       xhttp.open("POST", ogdUrl);
       xhttp.setRequestHeader(
         "Content-Type",
