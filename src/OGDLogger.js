@@ -312,6 +312,7 @@ export class OGDLogger {
         );
       }
 
+      // @ts-ignore
       xhttp.open("POST", ogdUrl);
       xhttp.setRequestHeader(
         "Content-Type",
@@ -323,11 +324,13 @@ export class OGDLogger {
         if (xhttp.readyState === XMLHttpRequest.DONE) {
           const status = xhttp.status;
           if (status === 0 || (status >= 200 && status < 400)) {
-            console.log(
-              "[DEBUG OGDLogger:xhttp] Great success\n",
-              "response:",
-              xhttp.responseText
-            );
+            if ((this.m_Settings & SettingsFlags.Debug) != 0) {
+              console.log(
+                "[DEBUG OGDLogger:xhttp] Great success\n",
+                "response:",
+                xhttp.responseText
+              );
+            }
           } else {
             console.error(
               "[OGDLogger] XMLHttpRequest returned error status: ",
