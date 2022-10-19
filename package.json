@@ -1,0 +1,22 @@
+{
+  "name": "opengamedata-js-log",
+  "version": "1.0.0",
+  "description": "a javascript analytics service for opengamedata used in web games ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/opengamedata/opengamedata-js-log.git"
+  },
+  "keywords": [
+    "opengamedata"
+  ],
+  "author": "Alexander Grabowski (https://github.com/opengamedata/opengamedata-js-log)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/opengamedata/opengamedata-js-log/issues"
+  },
+  "homepage": "https://github.com/opengamedata/opengamedata-js-log#readme"
+}
