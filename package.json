@@ -1,5 +1,5 @@
 {
-  "name": "opengamedata-js-log",
+  "name": "@opengamedata/opengamedata-js-log",
   "version": "1.1.0",
   "description": "a javascript analytics service for opengamedata used in web games ",
   "main": "index.js",
@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@XanGrab"
+    "registry": "https://npm.pkg.github.com/@opengamedata"
   },
   "repository": {
     "type": "git",
