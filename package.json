@@ -6,12 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "url": "https://github.com/opengamedata/opengamedata-js-log"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/@opengamedata"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/opengamedata/opengamedata-js-log.git"
   },
   "keywords": [
     "opengamedata"
