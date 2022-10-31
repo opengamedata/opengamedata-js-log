@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-          scope: "@XanGrab"
+          scope: "@opengamedata"
       - run: npm i
       - run: npm ci
       - run: npm publish
