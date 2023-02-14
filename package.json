@@ -10,8 +10,10 @@
     "registry": "https://npm.pkg.github.com/XanGrab"
   },
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/opengamedata/opengamedata-js-log.git"
+    "url": "https://github.com/opengamedata/opengamedata-js-log"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@opengamedata"
   },
   "keywords": [
     "opengamedata"
