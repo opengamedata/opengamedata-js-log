@@ -1,19 +1,16 @@
 {
   "name": "opengamedata-js-log",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "a javascript analytics service for opengamedata used in web games ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/XanGrab"
+    "registry": "https://npm.pkg.github.com/@opengamedata"
   },
   "repository": {
     "url": "https://github.com/opengamedata/opengamedata-js-log"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@opengamedata"
   },
   "keywords": [
     "opengamedata"
