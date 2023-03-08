@@ -85,9 +85,6 @@ export function BuildOGDUrl() {
   ];
   const url = OGDLogConsts.LogEndpoint.concat(...params); // base for the logging endpoint
 
-  if ((this.m_Settings & SettingsFlags.Debug) != 0) {
-    console.log("[OGDLogger] ab to post to:", url);
-  }
   const uri = encodeURI(url);
   return uri;
 }
