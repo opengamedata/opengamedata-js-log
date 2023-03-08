@@ -1,4 +1,4 @@
-// @ts-check
+//// @ts-check
 /**
  *   @fileoverview Based on the implementation in OGDLog.cs in opengamedata-unity by Autumn Beauchesne
  *   Handles Communication with the logging features of the OpenGameData servers
@@ -22,7 +22,7 @@ const StatusFlags = {
 /**
  * Dictates debug output and base64 encoding
  * */
-const SettingsFlags = {
+export const SettingsFlags = {
   Debug: 0x01,
   Base64Encode: 0x02,
 };
@@ -179,7 +179,9 @@ export class OGDLogger {
    * @param {object} value - of the parameter
    */
   WriteCustomEventParam(name, value) {
-    console.log("[DEBUG OGDLogger] writting custom event params");
+    if ((this.m_Settings & SettingsFlags.Debug) != 0) {
+      console.log("[DEBUG OGDLogger] writting custom event params");
+    }
     this.m_EventCustomParamsBuffer[name] = value;
 
     if (this.ModuleReady(ModuleID.Firebase)) {
@@ -194,11 +196,6 @@ export class OGDLogger {
    */
   WriteEventParam(name, value) {
     this.m_EventStream[name] = value;
-
-    // console.dir(
-    //   "[DEBUG] updating event stream: ",
-    //   { this.m_EventStream }
-    // );
   }
 
   /**

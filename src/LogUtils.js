@@ -9,6 +9,7 @@
  */
 
 import { OGDLogConsts, SessionConsts } from "./LogConsts";
+import { SettingsFlags } from "./OGDLogger";
 
 /**
  *  a helper function used to calculate a piece of the uuid
@@ -84,7 +85,9 @@ export function BuildOGDUrl() {
   ];
   const url = OGDLogConsts.LogEndpoint.concat(...params); // base for the logging endpoint
 
-  console.log("[OGDLogger] ab to post to:", url);
+  if ((this.m_Settings & SettingsFlags.Debug) != 0) {
+    console.log("[OGDLogger] ab to post to:", url);
+  }
   const uri = encodeURI(url);
   return uri;
 }
