@@ -17,8 +17,5 @@
   "bugs": {
     "url": "https://github.com/opengamedata/opengamedata-js-log/issues"
   },
-  "homepage": "https://github.com/opengamedata/opengamedata-js-log#readme",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  }
+  "homepage": "https://github.com/opengamedata/opengamedata-js-log#readme"
 }
