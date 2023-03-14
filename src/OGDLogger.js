@@ -7,7 +7,7 @@
  *   @author Alex Grabowski <ajgrabowski@wisc.edu>
  *   @version 1.0.0
  */
-import { SessionConsts } from "./LogConsts";
+import { SessionConsts, OGDLogConsts } from "./LogConsts";
 import { BuildOGDUrl, EscapeJSONString } from "./LogUtils";
 
 const xhttp = new XMLHttpRequest();
@@ -43,9 +43,11 @@ export const ModuleStatus = {
 
 export class OGDLogger {
   /**
+   * @param {string} myAppID - an id for the app in the database
+   * @param {string} myAppVersion - the current version of the app's logging events
    * @param {*} firebaseConfig (optional) - your app's Firebase project configuration object; If no object is provided, Firebase module will not be initialized
    */
-  constructor(firebaseConfig = null) {
+  constructor(myAppID, myAppVersion, firebaseConfig = null) {
     this.s_Instance;
 
     this.m_Endpoint = null;
@@ -64,6 +66,8 @@ export class OGDLogger {
     this.m_Settings = SettingsFlags.Base64Encode;
     this.m_ModuleStatus[ModuleID.OGD] = ModuleStatus.Preparing;
 
+    OGDLogConsts.AppId = myAppID;
+    OGDLogConsts.AppVersion = myAppVersion;
     // setup the class
     this.Initalize(firebaseConfig);
   }

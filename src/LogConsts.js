@@ -2,11 +2,10 @@
 /**
  * @fileoverview these objects store logging relivent session information to be refrenced later by the OGDLogger and LogUtils
  *
- * @version 1.0.0
+ * @version 1.1.0
  */
 import * as LogUtil from "./LogUtils";
 
-export const OGDLogConsts = {};
 export const SessionConsts = {};
 
 /**
@@ -22,6 +21,8 @@ Object.defineProperties(SessionConsts, {
   UserData: { value: null, writable: true },
 });
 
+export const OGDLogConsts = {};
+
 /**
  * OGD logging constants
  *
@@ -33,14 +34,12 @@ Object.defineProperties(SessionConsts, {
  * LogEndpoint - Endpoint base.
  */
 Object.defineProperties(OGDLogConsts, {
-  AppId: { value: "mashopolis" },
-  AppVersion: { value: "0.1.0" },
+  AppId: { value: "mashopolis", writable: true },
+  AppVersion: { value: "0.1.0", writable: true },
   AppBranch: { value: null },
   LogVersion: { value: "opengamedata" },
   ClientLogVersion: { value: "v0.1.1" },
   LogEndpoint: {
     value: "https://fielddaylab.wisc.edu/logger/log.php",
-    // value: "https://fielddaylab.wisc.edu/logger-testing/log.php",
   },
 });
-Object.freeze(OGDLogConsts);
