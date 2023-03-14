@@ -25,7 +25,7 @@ An instance of the `OGDLogger` can be created with the following format:
 
 `OGDLog log = new OGDLog(myAppId, myAppVersion, firebaseConfig)`
 
-- `myAppId`: an identifier for this app within the database (ex. "AQUALAB")
+- `myAppId`: an identifier for this app within the database (ex. "MASHOPOLIS")
 - `myAppVersion`: the current version of the app for all logging events
 
 - `firebaseConfig` (Optional): an optional firebase app configuration object, used to enable logging to firebase
