@@ -23,9 +23,12 @@ using npm:
 
 An instance of the `OGDLogger` can be created with the following format:
 
-`const ogdLogger = new OGDLogger(firebaseConfig);`
+`OGDLog log = new OGDLog(myAppId, myAppVersion, firebaseConfig)`
 
-- `firebaseConfig`: an optional firebase app configuration object, used to enable logging to firebase
+- `myAppId`: an identifier for this app within the database (ex. "AQUALAB")
+- `myAppVersion`: the current version of the app for all logging events
+
+- `firebaseConfig` (Optional): an optional firebase app configuration object, used to enable logging to firebase
 
 To send a user id along with every event, call `OGDLogger.SetUserId(userId);`
 
