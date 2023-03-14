@@ -1,6 +1,6 @@
 {
   "name": "opengamedata-js-log",
-  "version": "1.0.5-b.0",
+  "version": "1.1.0-a.0",
   "description": "a javascript analytics service for opengamedata used in web games ",
   "main": "index.js",
   "scripts": {
