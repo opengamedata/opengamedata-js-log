@@ -40,6 +40,6 @@ Object.defineProperties(OGDLogConsts, {
   LogVersion: { value: "opengamedata" },
   ClientLogVersion: { value: "v0.1.1" },
   LogEndpoint: {
-    value: "https://fielddaylab.wisc.edu/logger/log.php",
+    value: "https://ogdlogger.fielddaylab.wisc.edu/logger/log.php",
   },
 });
