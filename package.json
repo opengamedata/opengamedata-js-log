@@ -1,6 +1,6 @@
 {
   "name": "opengamedata-js-log",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "a javascript analytics service for opengamedata used in web games ",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/opengamedata/opengamedata-js-log#readme",
   "dependencies": {
-    "firebase": "^10.2.0"
+    "firebase": "^9.6.6"
   }
 }
