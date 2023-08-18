@@ -1,45 +1,48 @@
 // @ts-check
 /**
- * @fileoverview these objects store logging relivent session information to be refrenced later by the OGDLogger and LogUtils
+ * @fileoverview these objects store logging relevant session information to be referenced later by the OGDLogger and LogUtils
  *
  * @version 1.1.0
  */
 import * as LogUtil from "./LogUtils";
 
-export const SessionConsts = {};
+/**
+ * @typedef SessionConsts
+ * @property {number} SessionId - Unique session identifier
+ * @property {string} [UserId] - The player's unique personal identifier
+ * @property {object} [UserData] - Additional data associated with the UserId.
+ */
 
 /**
- * Session-level constants
- *
- * SessionId - Unique identifier for this session.
- * UserId - (Optional) The player's unique personal identifier
- * UserData - (Optional) additional data associated with the player ID.
+ * @type {SessionConsts}
  */
-Object.defineProperties(SessionConsts, {
-  SessionId: { value: LogUtil.UUIDint(), writable: true },
-  UserId: { value: null, writable: true },
-  UserData: { value: null, writable: true },
-});
+export const SessionConsts = {
+    SessionId: LogUtil.UUIDint(),
+    UserId: null,
+    UserData: null
+};
 
-export const OGDLogConsts = {};
+Object.seal(SessionConsts);
 
 /**
- * OGD logging constants
- *
- * AppId - Identifier for the app. Should match the name of the game in the database.
- * AppVersion - The current version of the app.
- * AppBranch - (Optional) The current branch of the app.
- * LogVersion - The version of the logging code.
- * ClientLogVersion - Client log version.
- * LogEndpoint - Endpoint base.
+ * @typedef OGDLogConsts
+ * @property {string} AppId - Identifier for the app. Should match the name of the game in the database.
+ * @property {string} AppVersion - The current version of the app.
+ * @property {string} [AppBranch] - The current branch of the app.
+ * @property {string} ClientLogVersion - Client logging version
  */
-Object.defineProperties(OGDLogConsts, {
-  AppId: { value: "mashopolis", writable: true },
-  AppVersion: { value: "0.1.0", writable: true },
-  AppBranch: { value: null },
-  LogVersion: { value: "opengamedata" },
-  ClientLogVersion: { value: "v0.1.1" },
-  LogEndpoint: {
-    value: "https://ogdlogger.fielddaylab.wisc.edu/logger/log.php",
-  },
-});
+
+export const OGDLogVersion = "opengamedata";
+export const OGDLogEndpoint = "https://ogdlogger.fielddaylab.wisc.edu/logger/log.php";
+
+/**
+ * @type {OGDLogConsts}
+ */
+export const OGDLogConsts = {
+    AppId: "mashopolis",
+    AppVersion: "0.1.0",
+    AppBranch: null,
+    ClientLogVersion: "v0.1.1"
+};
+
+Object.seal(OGDLogConsts);

@@ -7,72 +7,47 @@
  *   @version 1.0.0
  */
 
-import { SessionConsts, FirebaseConsts } from "./LogConsts";
-import { ModuleStatus, ModuleID, OGDLogger } from "./OGDLogger";
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import * as FBLib from "FirebaseLib";
+import { SessionConsts, OGDLogConsts } from "./LogConsts";
+import { initializeApp, FirebaseOptions } from "firebase/app";
+import { getAnalytics, Analytics, logEvent } from "firebase/analytics";
 
-const FBApp = initializeApp(FirebaseConsts);
-export const FBAnalytics = getAnalytics(FBApp);
+/** @type {FirebaseApp} */ let app = null;
+/** @type {Analytics} */ let analytics = null;
 
-export class FirebaseLogger {
-  s_ModuleStatus = ModuleStatus.Uninitialized;
-  m_EventCustomParamsBuffer = {};
-
-  ActivateFB() {
-    if (this.s_ModuleStatus != ModuleStatus.Preparing) return;
-
-    if (this.s_ModuleStatus > ModuleStatus.Preparing) {
-      OGDLogger.getInstance().SetModuleStatus();
-      if (this.s_ModuleStatus == ModuleStatus.Ready) {
-        this.FB_SetSessionConsts();
-        this.FB_SetAppConsts();
-        this.FB_ConfigurationSettings();
-      }
+/**
+ * 
+ * @param {FirebaseOptions} initializationParams 
+ * @returns {boolean}
+ */
+export function InitializeFirebase(initializationParams) {
+    try {
+        app = initializeApp(initializationParams);
+        analytics = getAnalytics(app);
+        return true;
+    } catch(e) {
+        console.error("[OGDLog.Firebase] Failed to initialize firebase", e);
+        return false;
     }
-  }
+}
 
-  /**
-   * @param {int} errorco - the error code
-   */
-  FB_PrepareFinish(errorco) {
-    if (errorco != 0) {
-      this.s_ModuleStatus = ModuleStatus.Error;
-      console.error("[OGDLog.Firebase] Firebase could not be initialized");
-      OGDLogger.getInstance().SetModuleStatus(
-        ModuleID.Firebase,
-        ModuleStatus.Error
-      );
-    } else {
-      this.s_ModuleStatus = ModuleStatus.Ready;
+/**
+ * 
+ * @param {string} eventName 
+ * @param {object} eventParams 
+ * @param {number} sequenceIndex 
+ * @param {OGDLogConsts} appConsts 
+ */
+export function LogFirebaseEvent(eventName, eventParams, sequenceIndex) {
+    const evtData = {
+        event_sequence_index: sequenceIndex,
+        user_id: SessionConsts.UserId,
+        user_data: SessionConsts.UserData,
+        app_id: OGDLogConsts.AppId,
+        app_flavor: OGDLogConsts.AppBranch,
+        app_version: OGDLogConsts.AppVersion,
+    };
+    if (!!eventParams) {
+        Object.assign(evtData, eventParams);
     }
-
-    OGDLogger.getInstance().Activate();
-  }
-
-  FB_Prepare() {
-    OGDLogger.SetModuleStatus(ModuleID.Firebase, ModuleStatus.Preparing);
-    FBLib.OGDLog_FirebasePrepare(FirebaseConsts);
-  }
-
-  FB_SetSessionConsts() {
-    let SessionConsts;
-
-    FBAnalytics.setUserId(SessionConsts.UserId);
-
-    if (SessionConsts.UserId) {
-      FBAnalytics.setUserProperties({ user_data: SessionConsts.UserData });
-    } else {
-      FBAnalytics.setUserProperties({ user_data: null });
-    }
-  }
-
-  FB_SetAppConsts() {
-    FBLib.OGDLog_FirebaseSetAppConsts();
-  }
-
-  FB_ConfigurationSettings() {
-    throw new Error("Method not implemented.");
-  }
+    logEvent(analytics, eventName, evtData)
 }

@@ -6,6 +6,7 @@ A Javascript service package for logging data in web games with OpenGameData's s
 
 1. Initial version
 2. Support for Firebase Analytics integration
+3. Firebase Analytics Integration fully hooked up, API simplifications.
 
 ## Setup
 
@@ -17,38 +18,33 @@ using npm:
 
 - `OGDLogger`: handles communication with the OpenGameData databases using Ajax
 
-- `LogEvent`: wrapper class for the data objects that get sent through `OGDLogger`
-
 ## Logging
 
 An instance of the `OGDLogger` can be created with the following format:
 
-`OGDLog log = new OGDLog(myAppId, myAppVersion, firebaseConfig)`
+`OGDLog log = new OGDLogger(myAppId, myAppVersion, firebaseConfig)`
 
 - `myAppId`: an identifier for this app within the database (ex. "MASHOPOLIS")
 - `myAppVersion`: the current version of the app for all logging events
 
 - `firebaseConfig` (Optional): an optional firebase app configuration object, used to enable logging to firebase
 
-To send a user id along with every event, call `OGDLogger.SetUserId(userId);`
+To send a user id along with every event, call `OGDLogger.setUserId(userId);`
 
 ### Events
 
-You can send events using a `LogEvent` object, which takes the following arguments:
+You can send events using the `OGDLogger.Log(eventName, eventParams)` method.
 
-- `Eventname: string`: a data value representing the type for the given event
-- `Eventparams: object`: an enum or string value to represent the given event type
-
-Once a `LogEvent` object is constructed with the given data, this function will automatically to write it's payload to a buffer in `OGDLogger` which can then be passed into the `OGDLogger.Log()` function.
-This will then log it using a sequence of internal function calls.
+- `eventName`: event type identifier
+- `eventParams`: (optional) object containing custom event parameters
 
 ### Firebase Analytics
 
-Coming soon... (v1.1.0)
+You can set up Firebase integration by either passing the `firebaseConfig` object into the `OGDLogger` constructor, or by calling `OGDLogger.useFirebase(firebaseConfig)` method.
 
 ## Debugging
 
-`OGDLogger.SetDebug()` can be called to set the logger's debug flag. If set, all requests and responses associated with OpenGameData event logging will be logged to the console.
+`OGDLogger.setDebug()` can be called to set the logger's debug flag. If set, all requests and responses associated with OpenGameData event logging will be logged to the console.
 
 ## Updating
 
