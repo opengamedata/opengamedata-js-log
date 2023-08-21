@@ -130,7 +130,7 @@ export class OGDLogger {
      */
     log(eventName, eventParams = undefined) {
         const now = new Date();
-        const nowString = [now.getFullYear(), NumberToStringPadLeft(now.getMonth(), 2), NumberToStringPadLeft(now.getDay(), 2)].join("-")
+        const nowString = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
             + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("") + "Z";
 
         const offset = -now.getTimezoneOffset(); // negative, to represent offset from UTC to here (rather than the reverse)
