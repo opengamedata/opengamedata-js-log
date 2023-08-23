@@ -23,6 +23,9 @@ export function InitializeFirebase(initializationParams) {
     try {
         app = initializeApp(initializationParams);
         analytics = getAnalytics(app);
+        gtag('config', initializationParams.measurementId, {
+            cookie_flags: "max-age=7200;secure;samesite=none"
+        });
         return true;
     } catch(e) {
         console.error("[OGDLog.Firebase] Failed to initialize firebase", e);
