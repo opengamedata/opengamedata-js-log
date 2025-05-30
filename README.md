@@ -40,7 +40,7 @@ You can send events using the `OGDLogger.Log(eventName, eventParams)` method.
 
 ### Firebase Analytics
 
-You can set up Firebase integration by either passing the `firebaseConfig` object into the `OGDLogger` constructor, or by calling `OGDLogger.useFirebase(firebaseConfig)` method.
+You can optionally set up Firebase integration by either passing the `firebaseConfig` object into the `OGDLogger` constructor, or by calling `OGDLogger.useFirebase(firebaseConfig)` method. If Firebaase is configured, events will be sent to both Open Game Data as well as Firebase
 
 ## Debugging
 
