@@ -25,11 +25,23 @@ export const SessionConsts = {
 Object.seal(SessionConsts);
 
 /**
+ * Version of the OpenGameData event schema to emit, as sent on the wire.
+ * @typedef {string} OGDSchemaVersion
+ */
+export const OGDSchemaVersion = {
+    V0_1: "0.1",
+    V1_0: "1.0"
+};
+
+Object.freeze(OGDSchemaVersion);
+
+/**
  * @typedef OGDLogConsts
  * @property {string} AppId - Identifier for the app. Should match the name of the game in the database.
  * @property {string} AppVersion - The current version of the app.
  * @property {string} [AppBranch] - The current branch of the app.
  * @property {string} ClientLogVersion - Client logging version
+ * @property {string} SchemaVersion - Event schema version this logger emits
  */
 
 export const OGDLogVersion = "opengamedata";
@@ -42,7 +54,8 @@ export const OGDLogConsts = {
     AppId: "mashopolis",
     AppVersion: "0.1.0",
     AppBranch: null,
-    ClientLogVersion: "v0.1.1"
+    ClientLogVersion: "v0.1.1",
+    SchemaVersion: OGDSchemaVersion.V1_0
 };
 
 Object.seal(OGDLogConsts);

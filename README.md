@@ -38,6 +38,21 @@ You can send events using the `OGDLogger.Log(eventName, eventParams)` method.
 - `eventName`: event type identifier
 - `eventParams`: (optional) object containing custom event parameters
 
+### Schema Version
+
+The logger can emit either the original `0.1` event schema or the OpenGameData
+Event Standard `1.0`. It defaults to `1.0`, so a game that updates this package
+moves to the new standard without any code change. To stay on the old schema:
+
+```js
+import { OGDSchemaVersion } from "opengamedata-js-log";
+
+log.setSchemaVersion(OGDSchemaVersion.V0_1);
+```
+
+Under `V1_0`, `app_version` becomes `game_version`, and `source_version` (which
+mirrors `game_version`) and `schema_version` are added.
+
 ### Firebase Analytics
 
 You can optionally set up Firebase integration by either passing the `firebaseConfig` object into the `OGDLogger` constructor, or by calling `OGDLogger.useFirebase(firebaseConfig)` method. If Firebaase is configured, events will be sent to both Open Game Data as well as Firebase
