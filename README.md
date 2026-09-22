@@ -53,6 +53,18 @@ log.setSchemaVersion(OGDSchemaVersion.V0_1);
 Under `V1_0`, `app_version` becomes `game_version`, and `source_version` (which
 mirrors `game_version`) and `schema_version` are added.
 
+### Game Segment
+
+The `game_segment` parameter records where the player is within the game's
+structural progression, such as the current level, quest, or region. Like the
+game state, it is attached to every event until it changes. It is not sent while
+the logger is set to `OGDSchemaVersion.V0_1`.
+
+```js
+log.setGameSegment({ level: "reef-3", attempt: 2 });
+log.clearGameSegment();
+```
+
 ### Firebase Analytics
 
 You can optionally set up Firebase integration by either passing the `firebaseConfig` object into the `OGDLogger` constructor, or by calling `OGDLogger.useFirebase(firebaseConfig)` method. If Firebaase is configured, events will be sent to both Open Game Data as well as Firebase
