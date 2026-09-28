@@ -31,6 +31,8 @@ An instance of the `OGDLogger` can be created with the following format:
 
 To send a user id along with every event, call `OGDLogger.setUserId(userId);`
 
+To send an instance id along with every event (schema `1.0` only), call `OGDLogger.setInstanceId(instanceId);`
+
 ### Events
 
 You can send events using the `OGDLogger.Log(eventName, eventParams)` method.
@@ -50,8 +52,14 @@ import { OGDSchemaVersion } from "opengamedata-js-log";
 log.setSchemaVersion(OGDSchemaVersion.V0_1);
 ```
 
-Under `V1_0`, `app_version` becomes `game_version`, and `source_version` (which
-mirrors `game_version`) and `schema_version` are added.
+Under `V1_0`:
+
+- `app_id`, `app_version`, `user_id`, `user_data`, `event_sequence_index` and `client_time`
+are sent as `game_id`, `game_version`, `player_id`, `player_history`, `session_sequence_index`
+and `timestamp`. `timestamp` is in UTC.
+- `source_version` (which mirrors `game_version`) and `schema_version` are added.
+- Each event also carries `game_time` (seconds since the session started) and `platform`
+(the browser's user agent, filled in automatically).
 
 ### Game Segment
 
@@ -63,6 +71,16 @@ the logger is set to `OGDSchemaVersion.V0_1`.
 ```js
 log.setGameSegment({ level: "reef-3", attempt: 2 });
 log.clearGameSegment();
+```
+
+### Game Configuration and Private Metadata
+
+`game_configuration` and `private_metadata` are attached to every event until they change. Pass
+`undefined` to clear them. Both are only sent under schema `1.0`.
+
+```js
+log.setGameConfiguration({ difficulty: "hard" });
+log.setPrivateMetadata({ classroom: "7b" });
 ```
 
 ### Firebase Analytics
