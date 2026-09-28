@@ -47,6 +47,10 @@ export class OGDLogger {
 
         this._gameState = undefined;
         this._gameSegment = undefined;
+        this._gameConfiguration = undefined;
+        this._privateMetadata = undefined;
+        this._platform = typeof navigator !== "undefined" ? { user_agent: navigator.userAgent } : undefined;
+        this._sessionStart = performance.now();
         this._flushCallback = undefined;
         this._settings = SettingsFlags.Base64Encode;
 
@@ -133,7 +137,20 @@ export class OGDLogger {
     resetSessionId() {
         SessionConsts.SessionId = UUIDint();
         this._eventSequence = 0;
+        this._sessionStart = performance.now();
         this._endpoint = BuildOGDUrl();
+    }
+
+    /**
+     * Sets the instance id, submitted with every event under OGDSchemaVersion.V1_0.
+     * Additionally triggers a rebuild of the OGD endpoint.
+     * @param {string} instanceId
+     */
+    setInstanceId(instanceId) {
+        if (SessionConsts.InstanceId != instanceId) {
+            SessionConsts.InstanceId = instanceId;
+            this._endpoint = BuildOGDUrl();
+        }
     }
 
     /**
@@ -161,6 +178,24 @@ export class OGDLogger {
         this._gameSegment = undefined;
     }
 
+    /**
+     * Sets the current game configuration. Pass undefined to clear it.
+     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
+     * @param {object} gameConfiguration
+     */
+    setGameConfiguration(gameConfiguration) {
+        this._gameConfiguration = gameConfiguration;
+    }
+
+    /**
+     * Sets the current private metadata. Pass undefined to clear it.
+     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
+     * @param {object} privateMetadata
+     */
+    setPrivateMetadata(privateMetadata) {
+        this._privateMetadata = privateMetadata;
+    }
+
     //* Events */
 
     /**
@@ -181,24 +216,42 @@ export class OGDLogger {
         const offsetString = [h, m.toString().padStart(2, "0"), s.toString().padStart(2, "0")].join(":");
 
         const sequenceIndex = this._eventSequence++;
+        const legacy = OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1;
 
-        let eventData = {
+        let eventData = legacy ? {
             event_name: eventName,
             event_sequence_index: sequenceIndex,
             client_time: nowString,
             client_offset: offsetString
+        } : {
+            event_name: eventName,
+            session_sequence_index: sequenceIndex,
+            timestamp: now.toISOString().replace("T", " "), // UTC, same format as the Unity package
+            client_offset: offsetString,
+            game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3))
         };
 
         if (!!SessionConsts.UserData) {
-            eventData["user_data"] = JSON.stringify(SessionConsts.UserData);
+            eventData[legacy ? "user_data" : "player_history"] = JSON.stringify(SessionConsts.UserData);
         }
 
         if (!!this._gameState) {
             eventData["game_state"] = JSON.stringify(this._gameState);
         }
 
-        if (OGDLogConsts.SchemaVersion !== OGDSchemaVersion.V0_1 && !!this._gameSegment) {
-            eventData["game_segment"] = JSON.stringify(this._gameSegment);
+        if (!legacy) {
+            if (!!this._gameSegment) {
+                eventData["game_segment"] = JSON.stringify(this._gameSegment);
+            }
+            if (!!this._gameConfiguration) {
+                eventData["game_configuration"] = JSON.stringify(this._gameConfiguration);
+            }
+            if (!!this._privateMetadata) {
+                eventData["private_metadata"] = JSON.stringify(this._privateMetadata);
+            }
+            if (!!this._platform) {
+                eventData["platform"] = JSON.stringify(this._platform);
+            }
         }
 
         if (!!eventParams) {
