@@ -73,7 +73,7 @@ export function BuildOGDUrl() {
         OGDLogConsts.AppId.toUpperCase(), //done automatically to force convention
         "&app_version=",
         OGDLogConsts.AppVersion,
-        ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        ...(OGDLogConsts.AppBranch ? ["&app_branch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
