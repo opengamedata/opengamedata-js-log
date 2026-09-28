@@ -40,6 +40,21 @@ You can send events using the `OGDLogger.Log(eventName, eventParams)` method.
 - `eventName`: event type identifier
 - `eventParams`: (optional) object containing custom event parameters
 
+### Event Codes
+
+Under schema `1.0`, every event carries an `event_id` from the OpenGameData event standard. `OGDEvents` holds
+the codes grouped by category and family. Use `logEvent` to send one:
+
+```js
+import { OGDEvents } from "opengamedata-js-log";
+
+log.logEvent(OGDEvents.PlayerAction.PointAndClick.SelectObject, "select_crate", { crate: 3 });
+```
+
+Events logged with `log(eventName, eventParams)` are sent with an `event_id` of `0`. For game-specific events,
+use a code from the `X900`-`X999` range of any block, or from the `9000` block. `src/OGDEvents.js` is generated
+from the standard in `ogd-standards`, so don't edit it by hand.
+
 ### Schema Version
 
 The logger can emit either the original `0.1` event schema or the OpenGameData
