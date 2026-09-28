@@ -100,7 +100,7 @@ export class OGDLogger {
             this.setSettings(this._settings | SettingsFlags.Debug);
         } else {
             // @ts-ignore
-            this.setSettings(this._settings | ~SettingsFlags.Debug);
+            this.setSettings(this._settings & ~SettingsFlags.Debug);
         }
     }
 
