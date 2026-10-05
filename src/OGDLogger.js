@@ -22,6 +22,19 @@ function NumberToStringPadLeft(number, digits) {
 }
 
 /**
+ * Base64-encodes the UTF-8 bytes of the text, since btoa only accepts Latin-1 characters
+ * @param {string} text
+ */
+function Base64EncodeUTF8(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary);
+}
+
+/**
  * Dictates debug output and base64 encoding
  * @typedef {number} SettingsFlags
  * */
@@ -181,13 +194,22 @@ export class OGDLogger {
             return;
         }
 
+        let data;
+        try {
+            data = EscapeJSONString(JSON.stringify(this._logQueue));
+            if (this._settings & SettingsFlags.Base64Encode) {
+                data = Base64EncodeUTF8(data);
+            }
+        } catch (e) {
+            // dropping the whole batch keeps one bad event from blocking everything logged after it
+            console.error("[OGDLogger] Dropped events that could not be encoded: ", e);
+            this._logQueue.length = 0;
+            return;
+        }
+
         this._flushing = true;
 
         this._submittedEventCount = this._logQueue.length;
-        let data = EscapeJSONString(JSON.stringify(this._logQueue));
-        if (this._settings & SettingsFlags.Base64Encode) {
-            data = btoa(data);
-        }
         const toPost = "data=" + encodeURIComponent(data);
 
         // Debugging
