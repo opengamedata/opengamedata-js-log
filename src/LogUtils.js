@@ -29,7 +29,7 @@ export function UUIDint() {
     let now = new Date();
 
     uuid = UUIDAccumulate(uuid, now.getFullYear(), 100);
-    uuid = UUIDAccumulate(uuid, now.getMonth(), 100);
+    uuid = UUIDAccumulate(uuid, now.getMonth() + 1, 100);
     uuid = UUIDAccumulate(uuid, now.getDate(), 100);
     uuid = UUIDAccumulate(uuid, now.getHours(), 100);
     uuid = UUIDAccumulate(uuid, now.getMinutes(), 100);
