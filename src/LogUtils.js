@@ -11,20 +11,21 @@ import { OGDLogConsts, OGDLogEndpoint, OGDLogVersion, SessionConsts } from "./Lo
 
 /**
  *  a helper function used to calculate a piece of the uuid
- *  @param {number} uuid - uniquie user id
+ *  @param {string} uuid - uniquie user id
  *  @param {number} input - number to be used; i.e. date section
- *  @param {number} multiply - multiplier to be used in funciton
+ *  @param {number} multiply - a power of 10, which sets how many digits the section takes
  *  @returns a section
  */
 function UUIDAccumulate(uuid, input, multiply) {
-    return uuid * multiply + ((input | 0) % multiply);
+    return uuid + ((input | 0) % multiply).toString().padStart(Math.log10(multiply), "0");
 }
 
 /**
- * @returns a 17-digit unique identifier using the current datetime.
+ * @returns a 17-digit unique identifier using the current datetime, as a string, since a number can't hold
+ * 17 digits exactly
  */
 export function UUIDint() {
-    let uuid = 0;
+    let uuid = "";
 
     let now = new Date();
 
