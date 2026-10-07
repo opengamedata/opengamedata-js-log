@@ -8,7 +8,7 @@ import * as LogUtil from "./LogUtils";
 
 /**
  * @typedef SessionConsts
- * @property {number} SessionId - Unique session identifier
+ * @property {string} SessionId - Unique session identifier
  * @property {string} [UserId] - The player's unique personal identifier
  * @property {object} [UserData] - Additional data associated with the UserId.
  */
