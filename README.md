@@ -71,10 +71,16 @@ Under `V1_0`:
 
 - `app_id`, `app_version`, `user_id`, `user_data`, `event_sequence_index` and `client_time`
 are sent as `game_id`, `game_version`, `player_id`, `player_history`, `session_sequence_index`
-and `timestamp`. `timestamp` is in UTC.
+and `timestamp`, and the app branch is sent as `condition`.
+- `timestamp` is local time with its offset from UTC, like `2026-10-06 18:55:00.123-05:00`
+(or `Z` in place of the offset when it's zero), so `client_offset` isn't sent.
 - `source_version` (which mirrors `game_version`) and `schema_version` are added.
-- Each event also carries `game_time` (seconds since the session started) and `platform`
-(the browser's user agent, filled in automatically).
+- Each event also carries `game_time` (seconds since the session started).
+- `player_history`, `game_configuration` and `platform` (the browser's user agent, filled in
+automatically) shouldn't change during a session, so they're sent once per request, in the
+query string, instead of with each event. After changing one, pass it to `setUserId` or
+`setGameConfiguration` again, and since these go in the URL, keep them small.
+- Every event carries `event_data`, which is `{}` when there are no event parameters.
 
 ### Game Segment
 
@@ -90,8 +96,8 @@ log.clearGameSegment();
 
 ### Game Configuration and Private Metadata
 
-`game_configuration` and `private_metadata` are attached to every event until they change. Pass
-`undefined` to clear them. Both are only sent under schema `1.0`.
+`game_configuration` and `private_metadata` are sent until they change. Pass `undefined` to clear
+them. Both are only sent under schema `1.0`.
 
 ```js
 log.setGameConfiguration({ difficulty: "hard" });

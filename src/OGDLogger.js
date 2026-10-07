@@ -30,6 +30,18 @@ export const SettingsFlags = {
     Base64Encode: 0x02,
 };
 
+/**
+ * Formats an offset from UTC as "Z" when it's zero, otherwise as e.g. "+05:30" or "-05:00"
+ * @param {number} minutes
+ */
+function FormatUTCOffset(minutes) {
+    if (minutes === 0) {
+        return "Z";
+    }
+    const absolute = Math.abs(minutes);
+    return (minutes < 0 ? "-" : "+") + NumberToStringPadLeft(Math.floor(absolute / 60), 2) + ":" + NumberToStringPadLeft(absolute % 60, 2);
+}
+
 export class OGDLogger {
     /**
      * @param {string} myAppID - an id for the app in the database
@@ -56,7 +68,7 @@ export class OGDLogger {
 
         OGDLogConsts.AppId = myAppID;
         OGDLogConsts.AppVersion = myAppVersion;
-        this._endpoint = BuildOGDUrl();
+        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
 
         this.useFirebase(firebaseConfig);
     }
@@ -79,11 +91,10 @@ export class OGDLogger {
      * @param {object} userData
      */
     setUserId(userId, userData = null) {
-        if (SessionConsts.UserId != userId || SessionConsts.UserData != userData) {
-            SessionConsts.UserId = userId;
-            SessionConsts.UserData = userData;
-            this._endpoint = BuildOGDUrl();
-        }
+        // always rebuilt, since userData may be the same object with new values, and it's in the url under v1.0
+        SessionConsts.UserId = userId;
+        SessionConsts.UserData = userData;
+        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
     }
 
     /**
@@ -96,7 +107,7 @@ export class OGDLogger {
     setSchemaVersion(schemaVersion) {
         if (OGDLogConsts.SchemaVersion !== schemaVersion) {
             OGDLogConsts.SchemaVersion = schemaVersion;
-            this._endpoint = BuildOGDUrl();
+            this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
         }
     }
 
@@ -138,7 +149,7 @@ export class OGDLogger {
         SessionConsts.SessionId = UUIDint();
         this._eventSequence = 0;
         this._sessionStart = performance.now();
-        this._endpoint = BuildOGDUrl();
+        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
     }
 
     /**
@@ -149,7 +160,7 @@ export class OGDLogger {
     setInstanceId(instanceId) {
         if (SessionConsts.InstanceId != instanceId) {
             SessionConsts.InstanceId = instanceId;
-            this._endpoint = BuildOGDUrl();
+            this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
         }
     }
 
@@ -179,12 +190,14 @@ export class OGDLogger {
     }
 
     /**
-     * Sets the current game configuration. Pass undefined to clear it.
-     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
+     * Sets the game configuration. Pass undefined to clear it.
+     * Not sent while the logger is set to OGDSchemaVersion.V0_1.
+     * Additionally triggers a rebuild of the OGD endpoint.
      * @param {object} gameConfiguration
      */
     setGameConfiguration(gameConfiguration) {
         this._gameConfiguration = gameConfiguration;
+        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
     }
 
     /**
@@ -215,8 +228,8 @@ export class OGDLogger {
      */
     logEvent(eventId, eventName, eventParams = undefined) {
         const now = new Date();
-        const nowString = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
-            + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("") + "Z";
+        const localTime = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
+            + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("");
 
         const offset = -now.getTimezoneOffset(); // negative, to represent offset from UTC to here (rather than the reverse)
 
@@ -231,19 +244,20 @@ export class OGDLogger {
         let eventData = legacy ? {
             event_name: eventName,
             event_sequence_index: sequenceIndex,
-            client_time: nowString,
+            client_time: localTime + "Z",
             client_offset: offsetString
         } : {
             event_name: eventName,
             session_sequence_index: sequenceIndex,
-            timestamp: now.toISOString().replace("T", " "), // UTC, same format as the Unity package
-            client_offset: offsetString,
+            timestamp: localTime + FormatUTCOffset(offset),
             event_id: eventId,
-            game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3))
+            game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3)),
+            // log.php rejects a v1.0 event without event_data
+            event_data: JSON.stringify(eventParams || {})
         };
 
-        if (!!SessionConsts.UserData) {
-            eventData[legacy ? "user_data" : "player_history"] = JSON.stringify(SessionConsts.UserData);
+        if (legacy && !!SessionConsts.UserData) {
+            eventData["user_data"] = JSON.stringify(SessionConsts.UserData);
         }
 
         if (!!this._gameState) {
@@ -254,18 +268,12 @@ export class OGDLogger {
             if (!!this._gameSegment) {
                 eventData["game_segment"] = JSON.stringify(this._gameSegment);
             }
-            if (!!this._gameConfiguration) {
-                eventData["game_configuration"] = JSON.stringify(this._gameConfiguration);
-            }
             if (!!this._privateMetadata) {
                 eventData["private_metadata"] = JSON.stringify(this._privateMetadata);
             }
-            if (!!this._platform) {
-                eventData["platform"] = JSON.stringify(this._platform);
-            }
         }
 
-        if (!!eventParams) {
+        if (legacy && !!eventParams) {
             eventData["event_data"] = JSON.stringify(eventParams);
         }
 

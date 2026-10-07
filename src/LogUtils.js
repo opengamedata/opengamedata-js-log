@@ -65,9 +65,11 @@ export function EscapeJSONString(text) {
 }
 
 /**
+ * @param {object} [gameConfiguration] - sent in the query string under OGDSchemaVersion.V1_0
+ * @param {object} [platform] - sent in the query string under OGDSchemaVersion.V1_0
  * @returns {string} generates the Open Game Data uri from information in ./LogConsts
  */
-export function BuildOGDUrl() {
+export function BuildOGDUrl(gameConfiguration = undefined, platform = undefined) {
     const legacy = OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1;
 
     let params = [
@@ -81,7 +83,7 @@ export function BuildOGDUrl() {
                 "&source_version=", encodeURIComponent(OGDLogConsts.AppVersion),
                 "&schema_version=", OGDSchemaVersion.V1_0
             ]),
-        ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        ...(OGDLogConsts.AppBranch ? [legacy ? "&appbranch=" : "&condition=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
@@ -89,6 +91,10 @@ export function BuildOGDUrl() {
         ...(SessionConsts.UserId ? [legacy ? "&user_id=" : "&player_id=", encodeURIComponent(SessionConsts.UserId)] : []),
         ...(!legacy && SessionConsts.InstanceId ? ["&instance_id=", encodeURIComponent(SessionConsts.InstanceId)] : []),
         ...(legacy && SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
+        // under v1.0, context that shouldn't change during a session is sent here instead of with each event
+        ...(!legacy && gameConfiguration ? ["&game_configuration=", encodeURIComponent(JSON.stringify(gameConfiguration))] : []),
+        ...(!legacy && platform ? ["&platform=", encodeURIComponent(JSON.stringify(platform))] : []),
+        ...(!legacy && SessionConsts.UserData ? ["&player_history=", encodeURIComponent(JSON.stringify(SessionConsts.UserData))] : []),
     ];
 
     return OGDLogEndpoint.concat(...params); // base for the logging endpoint
