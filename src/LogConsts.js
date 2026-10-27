@@ -32,7 +32,7 @@ Object.seal(SessionConsts);
  */
 export const OGDSchemaVersion = {
     V0_1: "0.1",
-    V1_0: "1.0"
+    V1_0: "1.0-alpha"
 };
 
 Object.freeze(OGDSchemaVersion);

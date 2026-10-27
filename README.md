@@ -51,14 +51,15 @@ import { OGDEvents } from "opengamedata-js-log";
 log.logEvent(OGDEvents.PlayerAction.PointAndClick.SelectObject, "select_crate", { crate: 3 });
 ```
 
-Events logged with `log(eventName, eventParams)` are sent with an `event_id` of `0`. For game-specific events,
-use a code from the `X900`-`X999` range of any block, or from the `9000` block. `src/OGDEvents.js` is generated
-from the standard in `ogd-standards`, so don't edit it by hand.
+Events logged with `log(eventName, eventParams)` are sent with an `event_id` of `9999`, the standard's code for an
+event without one. For game-specific events, use a code from the `X900`-`X999` range of any block, or from the
+`9000` block other than `9999`. `src/OGDEvents.js` is generated from the standard in `ogd-standards`, so don't
+edit it by hand.
 
 ### Schema Version
 
 The logger can emit either the original `0.1` event schema or the OpenGameData
-Event Standard `1.0`. It defaults to `1.0`, so a game that updates this package
+Event Standard `1.0`. It defaults to `V1_0`, so a game that updates this package
 moves to the new standard without any code change. To stay on the old schema:
 
 ```js
@@ -94,14 +95,13 @@ log.setGameSegment({ level: "reef-3", attempt: 2 });
 log.clearGameSegment();
 ```
 
-### Game Configuration and Private Metadata
+### Game Configuration
 
-`game_configuration` and `private_metadata` are sent until they change. Pass `undefined` to clear
-them. Both are only sent under schema `1.0`.
+`game_configuration` is sent until it changes. Pass `undefined` to clear it. It is only sent under
+schema `1.0`.
 
 ```js
 log.setGameConfiguration({ difficulty: "hard" });
-log.setPrivateMetadata({ classroom: "7b" });
 ```
 
 ### Firebase Analytics

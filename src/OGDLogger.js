@@ -60,7 +60,6 @@ export class OGDLogger {
         this._gameState = undefined;
         this._gameSegment = undefined;
         this._gameConfiguration = undefined;
-        this._privateMetadata = undefined;
         this._platform = typeof navigator !== "undefined" ? { user_agent: navigator.userAgent } : undefined;
         this._sessionStart = performance.now();
         this._flushCallback = undefined;
@@ -200,15 +199,6 @@ export class OGDLogger {
         this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
     }
 
-    /**
-     * Sets the current private metadata. Pass undefined to clear it.
-     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
-     * @param {object} privateMetadata
-     */
-    setPrivateMetadata(privateMetadata) {
-        this._privateMetadata = privateMetadata;
-    }
-
     //* Events */
 
     /**
@@ -217,7 +207,8 @@ export class OGDLogger {
      * @param {object?} eventParams
      */
     log(eventName, eventParams = undefined) {
-        this.logEvent(0, eventName, eventParams);
+        // 9999 is the standard's event_id for an event logged without one
+        this.logEvent(9999, eventName, eventParams);
     }
 
     /**
@@ -264,13 +255,8 @@ export class OGDLogger {
             eventData["game_state"] = JSON.stringify(this._gameState);
         }
 
-        if (!legacy) {
-            if (!!this._gameSegment) {
-                eventData["game_segment"] = JSON.stringify(this._gameSegment);
-            }
-            if (!!this._privateMetadata) {
-                eventData["private_metadata"] = JSON.stringify(this._privateMetadata);
-            }
+        if (!legacy && !!this._gameSegment) {
+            eventData["game_segment"] = JSON.stringify(this._gameSegment);
         }
 
         if (legacy && !!eventParams) {
