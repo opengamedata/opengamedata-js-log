@@ -65,37 +65,61 @@ export function EscapeJSONString(text) {
 }
 
 /**
- * @param {object} [gameConfiguration] - sent in the query string under OGDSchemaVersion.V1_0
- * @param {object} [platform] - sent in the query string under OGDSchemaVersion.V1_0
  * @returns {string} generates the Open Game Data uri from information in ./LogConsts
  */
-export function BuildOGDUrl(gameConfiguration = undefined, platform = undefined) {
-    const legacy = OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1;
+export function BuildOGDUrl() {
+    if (OGDLogConsts.SchemaVersion !== OGDSchemaVersion.V0_1) {
+        // log.php reads the rest of the v1.0 session fields from the request body, see BuildOGDSessionParams
+        return OGDLogEndpoint.concat("?game_id=", OGDLogConsts.AppId.toUpperCase(), "&schema_version=", OGDSchemaVersion.V1_0);
+    }
 
     let params = [
-        legacy ? "?app_id=" : "?game_id=",
+        "?app_id=",
         OGDLogConsts.AppId.toUpperCase(), //done automatically to force convention
-        // source_version mirrors game_version: this library only logs events the game itself produced
-        ...(legacy
-            ? ["&app_version=", OGDLogConsts.AppVersion]
-            : [
-                "&game_version=", encodeURIComponent(OGDLogConsts.AppVersion),
-                "&source_version=", encodeURIComponent(OGDLogConsts.AppVersion),
-                "&schema_version=", OGDSchemaVersion.V1_0
-            ]),
-        ...(OGDLogConsts.AppBranch ? [legacy ? "&appbranch=" : "&condition=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        "&app_version=",
+        OGDLogConsts.AppVersion,
+        ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
         SessionConsts.SessionId.toString(),
-        ...(SessionConsts.UserId ? [legacy ? "&user_id=" : "&player_id=", encodeURIComponent(SessionConsts.UserId)] : []),
-        ...(!legacy && SessionConsts.InstanceId ? ["&instance_id=", encodeURIComponent(SessionConsts.InstanceId)] : []),
-        ...(legacy && SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
-        // under v1.0, context that shouldn't change during a session is sent here instead of with each event
-        ...(!legacy && gameConfiguration ? ["&game_configuration=", encodeURIComponent(JSON.stringify(gameConfiguration))] : []),
-        ...(!legacy && platform ? ["&platform=", encodeURIComponent(JSON.stringify(platform))] : []),
-        ...(!legacy && SessionConsts.UserData ? ["&player_history=", encodeURIComponent(JSON.stringify(SessionConsts.UserData))] : []),
+        ...(SessionConsts.UserId ? ["&user_id=", encodeURIComponent(SessionConsts.UserId)] : []),
+        ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
     ];
 
     return OGDLogEndpoint.concat(...params); // base for the logging endpoint
+}
+
+/**
+ * @param {object} [gameConfiguration]
+ * @param {object} [platform]
+ * @returns {string} the session fields sent as form fields ahead of the event data under OGDSchemaVersion.V1_0,
+ * ending in "&". Empty under OGDSchemaVersion.V0_1, where they're in the url.
+ */
+export function BuildOGDSessionParams(gameConfiguration = undefined, platform = undefined) {
+    if (OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1) {
+        return "";
+    }
+
+    let params = [
+        "log_version=",
+        OGDLogConsts.ClientLogVersion.toString(),
+        // source_version mirrors game_version: this library only logs events the game itself produced
+        "&game_version=",
+        encodeURIComponent(OGDLogConsts.AppVersion),
+        "&source_version=",
+        encodeURIComponent(OGDLogConsts.AppVersion),
+        "&session_id=",
+        SessionConsts.SessionId.toString(),
+        ...(OGDLogConsts.AppBranch ? ["&condition=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        ...(SessionConsts.UserId ? ["&player_id=", encodeURIComponent(SessionConsts.UserId)] : []),
+        ...(SessionConsts.InstanceId ? ["&instance_id=", encodeURIComponent(SessionConsts.InstanceId)] : []),
+        // context that shouldn't change during a session is sent here instead of with each event
+        ...(gameConfiguration ? ["&game_configuration=", encodeURIComponent(JSON.stringify(gameConfiguration))] : []),
+        ...(platform ? ["&platform=", encodeURIComponent(JSON.stringify(platform))] : []),
+        ...(SessionConsts.UserData ? ["&player_history=", encodeURIComponent(JSON.stringify(SessionConsts.UserData))] : []),
+        "&"
+    ];
+
+    return "".concat(...params);
 }

@@ -78,9 +78,10 @@ and `timestamp`, and the app branch is sent as `condition`.
 - `source_version` (which mirrors `game_version`) and `schema_version` are added.
 - Each event also carries `game_time` (seconds since the session started).
 - `player_history`, `game_configuration` and `platform` (the browser's user agent, filled in
-automatically) shouldn't change during a session, so they're sent once per request, in the
-query string, instead of with each event. After changing one, pass it to `setUserId` or
-`setGameConfiguration` again, and since these go in the URL, keep them small.
+automatically) shouldn't change during a session, so they're sent once per request instead of
+with each event, with the values they have when the request is sent.
+- Only `game_id` and `schema_version` go in the URL. The other session fields are sent as form
+fields in the POST body, ahead of `data`, which is where `log.php` reads them.
 - Every event carries `event_data`, which is `{}` when there are no event parameters.
 
 ### Game Segment

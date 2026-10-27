@@ -8,7 +8,7 @@
  *   @version 1.0.0
  */
 import { SessionConsts, OGDLogConsts, OGDSchemaVersion } from "./LogConsts";
-import { BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
+import { BuildOGDSessionParams, BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
 import { InitializeFirebase, LogFirebaseEvent } from "./OGDLog.Firebase";
 
 const xhttp = new XMLHttpRequest();
@@ -67,7 +67,7 @@ export class OGDLogger {
 
         OGDLogConsts.AppId = myAppID;
         OGDLogConsts.AppVersion = myAppVersion;
-        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
+        this._endpoint = BuildOGDUrl();
 
         this.useFirebase(firebaseConfig);
     }
@@ -90,10 +90,11 @@ export class OGDLogger {
      * @param {object} userData
      */
     setUserId(userId, userData = null) {
-        // always rebuilt, since userData may be the same object with new values, and it's in the url under v1.0
-        SessionConsts.UserId = userId;
-        SessionConsts.UserData = userData;
-        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
+        if (SessionConsts.UserId != userId || SessionConsts.UserData != userData) {
+            SessionConsts.UserId = userId;
+            SessionConsts.UserData = userData;
+            this._endpoint = BuildOGDUrl();
+        }
     }
 
     /**
@@ -106,7 +107,7 @@ export class OGDLogger {
     setSchemaVersion(schemaVersion) {
         if (OGDLogConsts.SchemaVersion !== schemaVersion) {
             OGDLogConsts.SchemaVersion = schemaVersion;
-            this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
+            this._endpoint = BuildOGDUrl();
         }
     }
 
@@ -148,19 +149,15 @@ export class OGDLogger {
         SessionConsts.SessionId = UUIDint();
         this._eventSequence = 0;
         this._sessionStart = performance.now();
-        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
+        this._endpoint = BuildOGDUrl();
     }
 
     /**
-     * Sets the instance id, submitted with every event under OGDSchemaVersion.V1_0.
-     * Additionally triggers a rebuild of the OGD endpoint.
+     * Sets the instance id, sent with every request under OGDSchemaVersion.V1_0.
      * @param {string} instanceId
      */
     setInstanceId(instanceId) {
-        if (SessionConsts.InstanceId != instanceId) {
-            SessionConsts.InstanceId = instanceId;
-            this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
-        }
+        SessionConsts.InstanceId = instanceId;
     }
 
     /**
@@ -191,12 +188,10 @@ export class OGDLogger {
     /**
      * Sets the game configuration. Pass undefined to clear it.
      * Not sent while the logger is set to OGDSchemaVersion.V0_1.
-     * Additionally triggers a rebuild of the OGD endpoint.
      * @param {object} gameConfiguration
      */
     setGameConfiguration(gameConfiguration) {
         this._gameConfiguration = gameConfiguration;
-        this._endpoint = BuildOGDUrl(this._gameConfiguration, this._platform);
     }
 
     //* Events */
@@ -290,7 +285,8 @@ export class OGDLogger {
         if (this._settings & SettingsFlags.Base64Encode) {
             data = btoa(data);
         }
-        const toPost = "data=" + encodeURIComponent(data);
+        // under v1.0 the session fields go first, read as they are when the batch is sent
+        const toPost = BuildOGDSessionParams(this._gameConfiguration, this._platform) + "data=" + encodeURIComponent(data);
 
         // Debugging
         if ((this._settings & SettingsFlags.Debug) != 0) {
