@@ -194,7 +194,8 @@ export class OGDLogger {
      * @param {object?} eventParams
      */
     log(eventName, eventParams = undefined) {
-        this.logEvent(0, eventName, eventParams);
+        // 9999 is the standard's event_id for an event logged without one
+        this.logEvent(9999, eventName, eventParams);
     }
 
     /**
