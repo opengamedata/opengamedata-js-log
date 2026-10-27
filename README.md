@@ -73,14 +73,13 @@ log.setGameSegment({ level: "reef-3", attempt: 2 });
 log.clearGameSegment();
 ```
 
-### Game Configuration and Private Metadata
+### Game Configuration
 
-`game_configuration` and `private_metadata` are attached to every event until they change. Pass
-`undefined` to clear them. Both are only sent under schema `1.0`.
+`game_configuration` is attached to every event until it changes. Pass `undefined` to clear it. It
+is only sent under schema `1.0`.
 
 ```js
 log.setGameConfiguration({ difficulty: "hard" });
-log.setPrivateMetadata({ classroom: "7b" });
 ```
 
 ### Firebase Analytics

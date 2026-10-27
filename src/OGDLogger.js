@@ -48,7 +48,6 @@ export class OGDLogger {
         this._gameState = undefined;
         this._gameSegment = undefined;
         this._gameConfiguration = undefined;
-        this._privateMetadata = undefined;
         this._platform = typeof navigator !== "undefined" ? { user_agent: navigator.userAgent } : undefined;
         this._sessionStart = performance.now();
         this._flushCallback = undefined;
@@ -187,15 +186,6 @@ export class OGDLogger {
         this._gameConfiguration = gameConfiguration;
     }
 
-    /**
-     * Sets the current private metadata. Pass undefined to clear it.
-     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
-     * @param {object} privateMetadata
-     */
-    setPrivateMetadata(privateMetadata) {
-        this._privateMetadata = privateMetadata;
-    }
-
     //* Events */
 
     /**
@@ -245,9 +235,6 @@ export class OGDLogger {
             }
             if (!!this._gameConfiguration) {
                 eventData["game_configuration"] = JSON.stringify(this._gameConfiguration);
-            }
-            if (!!this._privateMetadata) {
-                eventData["private_metadata"] = JSON.stringify(this._privateMetadata);
             }
             if (!!this._platform) {
                 eventData["platform"] = JSON.stringify(this._platform);
