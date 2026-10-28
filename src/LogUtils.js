@@ -80,7 +80,7 @@ export function BuildOGDUrl() {
         OGDLogConsts.AppVersion,
         ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
-        OGDLogConsts.ClientLogVersion.toString(),
+        encodeURIComponent(OGDLogConsts.ClientLogVersion),
         "&session_id=",
         SessionConsts.SessionId.toString(),
         ...(SessionConsts.UserId ? ["&user_id=", encodeURIComponent(SessionConsts.UserId)] : []),
@@ -103,7 +103,7 @@ export function BuildOGDSessionParams(gameConfiguration = undefined, platform = 
 
     let params = [
         "log_version=",
-        OGDLogConsts.ClientLogVersion.toString(),
+        encodeURIComponent(OGDLogConsts.ClientLogVersion),
         // source_version mirrors game_version: this library only logs events the game itself produced
         "&game_version=",
         encodeURIComponent(OGDLogConsts.AppVersion),

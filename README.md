@@ -22,10 +22,12 @@ using npm:
 
 An instance of the `OGDLogger` can be created with the following format:
 
-`OGDLog log = new OGDLogger(myAppId, myAppVersion, firebaseConfig)`
+`OGDLog log = new OGDLogger(myAppId, myAppVersion, myLogVersion, firebaseConfig)`
 
 - `myAppId`: an identifier for this app within the database (ex. "MASHOPOLIS")
 - `myAppVersion`: the current version of the app for all logging events
+- `myLogVersion`: the version of the app's logging events (ex. "1.0"), sent as `log_version`. Raise it when the app
+adds, removes or changes events, separately from `myAppVersion`. The constructor throws a `TypeError` without it.
 
 - `firebaseConfig` (Optional): an optional firebase app configuration object, used to enable logging to firebase
 
@@ -60,7 +62,7 @@ edit it by hand.
 
 The logger can emit either the original `0.1` event schema or the OpenGameData
 Event Standard `1.0`. It defaults to `V1_0`, so a game that updates this package
-moves to the new standard without any code change. To stay on the old schema:
+moves to the new standard without calling `setSchemaVersion`. To stay on the old schema:
 
 ```js
 import { OGDSchemaVersion } from "opengamedata-js-log";

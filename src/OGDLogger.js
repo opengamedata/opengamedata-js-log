@@ -45,10 +45,16 @@ function FormatUTCOffset(minutes) {
 export class OGDLogger {
     /**
      * @param {string} myAppID - an id for the app in the database
-     * @param {string} myAppVersion - the current version of the app's logging events
+     * @param {string} myAppVersion - the current version of the app
+     * @param {string|number} myLogVersion - the version of the app's logging events, e.g. "1.0"
      * @param {FirebaseOptions} firebaseConfig (optional) - your app's Firebase project configuration object; If no object is provided, Firebase module will not be initialized
      */
-    constructor(myAppID, myAppVersion, firebaseConfig = null) {
+    constructor(myAppID, myAppVersion, myLogVersion, firebaseConfig = null) {
+        // also catches calls from before myLogVersion was added, which pass firebaseConfig in its place
+        if (typeof myLogVersion !== "string" && typeof myLogVersion !== "number") {
+            throw new TypeError("[OGDLogger] Pass the log version, e.g. \"1.0\", after the app version");
+        }
+
         /** @private @type {string} */ this._endpoint = null;
 
         /** @private @type {number} */ this._eventSequence = 0;
@@ -67,6 +73,7 @@ export class OGDLogger {
 
         OGDLogConsts.AppId = myAppID;
         OGDLogConsts.AppVersion = myAppVersion;
+        OGDLogConsts.ClientLogVersion = myLogVersion;
         this._endpoint = BuildOGDUrl();
 
         this.useFirebase(firebaseConfig);
