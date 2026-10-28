@@ -72,10 +72,17 @@ Under `V1_0`:
 
 - `app_id`, `app_version`, `user_id`, `user_data`, `event_sequence_index` and `client_time`
 are sent as `game_id`, `game_version`, `player_id`, `player_history`, `session_sequence_index`
-and `timestamp`. `timestamp` is in UTC.
+and `timestamp`, and the app branch is sent as `condition`.
+- `timestamp` is local time with its offset from UTC, like `2026-10-06 18:55:00.123-05:00`
+(or `Z` in place of the offset when it's zero), so `client_offset` isn't sent.
 - `source_version` (which mirrors `game_version`) and `schema_version` are added.
-- Each event also carries `game_time` (seconds since the session started) and `platform`
-(the browser's user agent, filled in automatically).
+- Each event also carries `game_time` (seconds since the session started).
+- `player_history`, `game_configuration` and `platform` (the browser's user agent, filled in
+automatically) shouldn't change during a session, so they're sent once per request instead of
+with each event, with the values they have when the request is sent.
+- Only `game_id` and `schema_version` go in the URL. The other session fields are sent as form
+fields in the POST body, ahead of `data`, which is where `log.php` reads them.
+- Every event carries `event_data`, which is `{}` when there are no event parameters.
 
 ### Game Segment
 
@@ -91,8 +98,8 @@ log.clearGameSegment();
 
 ### Game Configuration
 
-`game_configuration` is attached to every event until it changes. Pass `undefined` to clear it. It
-is only sent under schema `1.0`.
+`game_configuration` is sent until it changes. Pass `undefined` to clear it. It is only sent under
+schema `1.0`.
 
 ```js
 log.setGameConfiguration({ difficulty: "hard" });

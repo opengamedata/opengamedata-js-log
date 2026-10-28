@@ -8,7 +8,7 @@
  *   @version 1.0.0
  */
 import { SessionConsts, OGDLogConsts, OGDSchemaVersion } from "./LogConsts";
-import { BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
+import { BuildOGDSessionParams, BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
 import { InitializeFirebase, LogFirebaseEvent } from "./OGDLog.Firebase";
 
 const xhttp = new XMLHttpRequest();
@@ -29,6 +29,18 @@ export const SettingsFlags = {
     Debug: 0x01,
     Base64Encode: 0x02,
 };
+
+/**
+ * Formats an offset from UTC as "Z" when it's zero, otherwise as e.g. "+05:30" or "-05:00"
+ * @param {number} minutes
+ */
+function FormatUTCOffset(minutes) {
+    if (minutes === 0) {
+        return "Z";
+    }
+    const absolute = Math.abs(minutes);
+    return (minutes < 0 ? "-" : "+") + NumberToStringPadLeft(Math.floor(absolute / 60), 2) + ":" + NumberToStringPadLeft(absolute % 60, 2);
+}
 
 export class OGDLogger {
     /**
@@ -141,15 +153,11 @@ export class OGDLogger {
     }
 
     /**
-     * Sets the instance id, submitted with every event under OGDSchemaVersion.V1_0.
-     * Additionally triggers a rebuild of the OGD endpoint.
+     * Sets the instance id, sent with every request under OGDSchemaVersion.V1_0.
      * @param {string} instanceId
      */
     setInstanceId(instanceId) {
-        if (SessionConsts.InstanceId != instanceId) {
-            SessionConsts.InstanceId = instanceId;
-            this._endpoint = BuildOGDUrl();
-        }
+        SessionConsts.InstanceId = instanceId;
     }
 
     /**
@@ -178,8 +186,8 @@ export class OGDLogger {
     }
 
     /**
-     * Sets the current game configuration. Pass undefined to clear it.
-     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
+     * Sets the game configuration. Pass undefined to clear it.
+     * Not sent while the logger is set to OGDSchemaVersion.V0_1.
      * @param {object} gameConfiguration
      */
     setGameConfiguration(gameConfiguration) {
@@ -206,8 +214,8 @@ export class OGDLogger {
      */
     logEvent(eventId, eventName, eventParams = undefined) {
         const now = new Date();
-        const nowString = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
-            + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("") + "Z";
+        const localTime = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
+            + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("");
 
         const offset = -now.getTimezoneOffset(); // negative, to represent offset from UTC to here (rather than the reverse)
 
@@ -222,38 +230,31 @@ export class OGDLogger {
         let eventData = legacy ? {
             event_name: eventName,
             event_sequence_index: sequenceIndex,
-            client_time: nowString,
+            client_time: localTime + "Z",
             client_offset: offsetString
         } : {
             event_name: eventName,
             session_sequence_index: sequenceIndex,
-            timestamp: now.toISOString().replace("T", " "), // UTC, same format as the Unity package
-            client_offset: offsetString,
+            timestamp: localTime + FormatUTCOffset(offset),
             event_id: eventId,
-            game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3))
+            game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3)),
+            // log.php rejects a v1.0 event without event_data
+            event_data: JSON.stringify(eventParams || {})
         };
 
-        if (!!SessionConsts.UserData) {
-            eventData[legacy ? "user_data" : "player_history"] = JSON.stringify(SessionConsts.UserData);
+        if (legacy && !!SessionConsts.UserData) {
+            eventData["user_data"] = JSON.stringify(SessionConsts.UserData);
         }
 
         if (!!this._gameState) {
             eventData["game_state"] = JSON.stringify(this._gameState);
         }
 
-        if (!legacy) {
-            if (!!this._gameSegment) {
-                eventData["game_segment"] = JSON.stringify(this._gameSegment);
-            }
-            if (!!this._gameConfiguration) {
-                eventData["game_configuration"] = JSON.stringify(this._gameConfiguration);
-            }
-            if (!!this._platform) {
-                eventData["platform"] = JSON.stringify(this._platform);
-            }
+        if (!legacy && !!this._gameSegment) {
+            eventData["game_segment"] = JSON.stringify(this._gameSegment);
         }
 
-        if (!!eventParams) {
+        if (legacy && !!eventParams) {
             eventData["event_data"] = JSON.stringify(eventParams);
         }
 
@@ -284,7 +285,8 @@ export class OGDLogger {
         if (this._settings & SettingsFlags.Base64Encode) {
             data = btoa(data);
         }
-        const toPost = "data=" + encodeURIComponent(data);
+        // under v1.0 the session fields go first, read as they are when the batch is sent
+        const toPost = BuildOGDSessionParams(this._gameConfiguration, this._platform) + "data=" + encodeURIComponent(data);
 
         // Debugging
         if ((this._settings & SettingsFlags.Debug) != 0) {
