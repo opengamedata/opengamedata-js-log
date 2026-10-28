@@ -194,6 +194,17 @@ export class OGDLogger {
      * @param {object?} eventParams
      */
     log(eventName, eventParams = undefined) {
+        // 9999 is the standard's event_id for an event logged without one
+        this.logEvent(9999, eventName, eventParams);
+    }
+
+    /**
+     * Writes an event with the given event code (see OGDEvents) to the buffer.
+     * @param {number} eventId
+     * @param {string} eventName
+     * @param {object?} eventParams
+     */
+    logEvent(eventId, eventName, eventParams = undefined) {
         const now = new Date();
         const nowString = [now.getFullYear(), NumberToStringPadLeft(now.getMonth() + 1, 2), NumberToStringPadLeft(now.getDate(), 2)].join("-")
             + " " + [NumberToStringPadLeft(now.getHours(), 2), ":", NumberToStringPadLeft(now.getMinutes(), 2), ":", NumberToStringPadLeft(now.getSeconds(), 2), ".", NumberToStringPadLeft(now.getMilliseconds(), 3)].join("") + "Z";
@@ -218,6 +229,7 @@ export class OGDLogger {
             session_sequence_index: sequenceIndex,
             timestamp: now.toISOString().replace("T", " "), // UTC, same format as the Unity package
             client_offset: offsetString,
+            event_id: eventId,
             game_time: Number(((performance.now() - this._sessionStart) / 1000).toFixed(3))
         };
 
