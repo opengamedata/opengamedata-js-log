@@ -46,6 +46,7 @@ export class OGDLogger {
         this._submittedEventCount = 0;
 
         this._gameState = undefined;
+        this._gameSegment = undefined;
         this._flushCallback = undefined;
         this._settings = SettingsFlags.Base64Encode;
 
@@ -143,6 +144,23 @@ export class OGDLogger {
         this._gameState = gameState;
     }
 
+    /**
+     * Sets the current game segment: where the player is within the game's
+     * structural progression (level, quest, region).
+     * Not attached to events while the logger is set to OGDSchemaVersion.V0_1.
+     * @param {object} gameSegment
+     */
+    setGameSegment(gameSegment) {
+        this._gameSegment = gameSegment;
+    }
+
+    /**
+     * Clears the current game segment.
+     */
+    clearGameSegment() {
+        this._gameSegment = undefined;
+    }
+
     //* Events */
 
     /**
@@ -177,6 +195,10 @@ export class OGDLogger {
 
         if (!!this._gameState) {
             eventData["game_state"] = JSON.stringify(this._gameState);
+        }
+
+        if (OGDLogConsts.SchemaVersion !== OGDSchemaVersion.V0_1 && !!this._gameSegment) {
+            eventData["game_segment"] = JSON.stringify(this._gameSegment);
         }
 
         if (!!eventParams) {
