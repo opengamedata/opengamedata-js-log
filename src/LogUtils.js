@@ -68,11 +68,13 @@ export function EscapeJSONString(text) {
  * @returns {string} generates the Open Game Data uri from information in ./LogConsts
  */
 export function BuildOGDUrl() {
+    const legacy = OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1;
+
     let params = [
-        "?app_id=",
+        legacy ? "?app_id=" : "?game_id=",
         OGDLogConsts.AppId.toUpperCase(), //done automatically to force convention
         // source_version mirrors game_version: this library only logs events the game itself produced
-        ...(OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1
+        ...(legacy
             ? ["&app_version=", OGDLogConsts.AppVersion]
             : [
                 "&game_version=", encodeURIComponent(OGDLogConsts.AppVersion),
@@ -84,8 +86,9 @@ export function BuildOGDUrl() {
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
         SessionConsts.SessionId.toString(),
-        ...(SessionConsts.UserId ? ["&user_id=", encodeURIComponent(SessionConsts.UserId)] : []),
-        ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
+        ...(SessionConsts.UserId ? [legacy ? "&user_id=" : "&player_id=", encodeURIComponent(SessionConsts.UserId)] : []),
+        ...(!legacy && SessionConsts.InstanceId ? ["&instance_id=", encodeURIComponent(SessionConsts.InstanceId)] : []),
+        ...(legacy && SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
     ];
 
     return OGDLogEndpoint.concat(...params); // base for the logging endpoint

@@ -11,6 +11,7 @@ import * as LogUtil from "./LogUtils";
  * @property {number} SessionId - Unique session identifier
  * @property {string} [UserId] - The player's unique personal identifier
  * @property {object} [UserData] - Additional data associated with the UserId.
+ * @property {string} [InstanceId] - Identifier for this game instance. The standard defaults it to the session id.
  */
 
 /**
@@ -19,7 +20,8 @@ import * as LogUtil from "./LogUtils";
 export const SessionConsts = {
     SessionId: LogUtil.UUIDint(),
     UserId: null,
-    UserData: null
+    UserData: null,
+    InstanceId: null
 };
 
 Object.seal(SessionConsts);
