@@ -86,6 +86,18 @@ with each event, with the values they have when the request is sent.
 fields in the POST body, ahead of `data`, which is where `log.php` reads them.
 - Every event carries `event_data`, which is `{}` when there are no event parameters.
 
+### Testing Endpoint
+
+To send events to a different `log.php`, such as the testing endpoint, pass its URL to `setEndpoint`. Calling it with
+no URL goes back to the production endpoint.
+
+```js
+log.setEndpoint("https://t-main-t---ogd-api-logger-test-3rlcoyes6a-uc.a.run.app/log.php");
+```
+
+The testing endpoint only reads schema `1.0` requests for now. Use the endpoint's final URL, since a redirect can
+turn the upload into a GET without its data.
+
 ### Game Segment
 
 The `game_segment` parameter records where the player is within the game's

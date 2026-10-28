@@ -7,7 +7,7 @@
  *   @author Alex Grabowski <ajgrabowski@wisc.edu>
  *   @version 1.0.0
  */
-import { SessionConsts, OGDLogConsts, OGDSchemaVersion } from "./LogConsts";
+import { SessionConsts, OGDLogConsts, OGDLogEndpoint, OGDSchemaVersion } from "./LogConsts";
 import { BuildOGDSessionParams, BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
 import { InitializeFirebase, LogFirebaseEvent } from "./OGDLog.Firebase";
 
@@ -124,6 +124,18 @@ export class OGDLogger {
      */
     getSchemaVersion() {
         return OGDLogConsts.SchemaVersion;
+    }
+
+    /**
+     * Sends events to a different log.php, such as a testing endpoint.
+     * Call with no endpoint to go back to the production one.
+     * Additionally triggers a rebuild of the OGD endpoint.
+     *
+     * @param {string} endpoint - the url of log.php, without a query string
+     */
+    setEndpoint(endpoint = OGDLogEndpoint) {
+        OGDLogConsts.Endpoint = endpoint;
+        this._endpoint = BuildOGDUrl();
     }
 
     /**

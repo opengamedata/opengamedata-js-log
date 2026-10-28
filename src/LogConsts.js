@@ -44,6 +44,7 @@ Object.freeze(OGDSchemaVersion);
  * @property {string} [AppBranch] - The current branch of the app. Sent as condition under OGDSchemaVersion.V1_0.
  * @property {string|number} ClientLogVersion - The version of the app's logging events, set by the OGDLogger constructor
  * @property {string} SchemaVersion - Event schema version this logger emits
+ * @property {string} Endpoint - The log.php that events are sent to
  */
 
 export const OGDLogVersion = "opengamedata";
@@ -57,7 +58,8 @@ export const OGDLogConsts = {
     AppVersion: "0.1.0",
     AppBranch: null,
     ClientLogVersion: null,
-    SchemaVersion: OGDSchemaVersion.V1_0
+    SchemaVersion: OGDSchemaVersion.V1_0,
+    Endpoint: OGDLogEndpoint
 };
 
 Object.seal(OGDLogConsts);
