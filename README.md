@@ -22,10 +22,12 @@ using npm:
 
 An instance of the `OGDLogger` can be created with the following format:
 
-`OGDLog log = new OGDLogger(myAppId, myAppVersion, firebaseConfig)`
+`OGDLog log = new OGDLogger(myAppId, myAppVersion, myLogVersion, firebaseConfig)`
 
 - `myAppId`: an identifier for this app within the database (ex. "MASHOPOLIS")
 - `myAppVersion`: the current version of the app for all logging events
+- `myLogVersion`: the version of the app's logging events (ex. "1.0"), sent as `log_version`. Raise it when the app
+adds, removes or changes events, separately from `myAppVersion`. The constructor throws a `TypeError` without it.
 
 - `firebaseConfig` (Optional): an optional firebase app configuration object, used to enable logging to firebase
 
@@ -60,7 +62,7 @@ edit it by hand.
 
 The logger can emit either the original `0.1` event schema or the OpenGameData
 Event Standard `1.0`. It defaults to `V1_0`, so a game that updates this package
-moves to the new standard without any code change. To stay on the old schema:
+moves to the new standard without calling `setSchemaVersion`. To stay on the old schema:
 
 ```js
 import { OGDSchemaVersion } from "opengamedata-js-log";
@@ -83,6 +85,18 @@ with each event, with the values they have when the request is sent.
 - Only `game_id` and `schema_version` go in the URL. The other session fields are sent as form
 fields in the POST body, ahead of `data`, which is where `log.php` reads them.
 - Every event carries `event_data`, which is `{}` when there are no event parameters.
+
+### Testing Endpoint
+
+To send events to a different `log.php`, such as the testing endpoint, pass its URL to `setEndpoint`. Calling it with
+no URL goes back to the production endpoint.
+
+```js
+log.setEndpoint("https://t-main-t---ogd-api-logger-test-3rlcoyes6a-uc.a.run.app/log.php");
+```
+
+The testing endpoint only reads schema `1.0` requests for now. Use the endpoint's final URL, since a redirect can
+turn the upload into a GET without its data.
 
 ### Game Segment
 
