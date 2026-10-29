@@ -54,7 +54,7 @@ log.logEvent(OGDEvents.PlayerAction.PointAndClick.SelectObject, "select_crate", 
 Events logged with `log(eventName, eventParams)` are sent with an `event_id` of `9999`, the standard's code for an
 event without one. For game-specific events, use a code from the `X900`-`X999` range of any block, or from the
 `9000` block other than `9999`. `src/OGDEvents.js` is generated from the standard in `ogd-standards`, so don't
-edit it by hand.
+edit it by hand. A workflow checks `ogd-standards` every day and opens a pull request when the codes change.
 
 ### Schema Version
 
