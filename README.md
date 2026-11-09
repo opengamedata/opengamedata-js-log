@@ -95,8 +95,7 @@ no URL goes back to the production endpoint.
 log.setEndpoint("https://t-main-t---ogd-api-logger-test-3rlcoyes6a-uc.a.run.app/log.php");
 ```
 
-The testing endpoint only reads schema `1.0` requests for now. Use the endpoint's final URL, since a redirect can
-turn the upload into a GET without its data.
+Use the endpoint's final URL, since a redirect can turn the upload into a GET without its data.
 
 ### Game Segment
 
