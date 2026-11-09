@@ -79,7 +79,7 @@ export function BuildOGDUrl() {
         "&session_id=",
         SessionConsts.SessionId.toString(),
         ...(SessionConsts.UserId ? ["&user_id=", encodeURIComponent(SessionConsts.UserId)] : []),
-        ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
+        ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(JSON.stringify(SessionConsts.UserData))] : []),
     ];
 
     return OGDLogEndpoint.concat(...params); // base for the logging endpoint
