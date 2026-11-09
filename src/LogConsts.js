@@ -42,8 +42,9 @@ Object.freeze(OGDSchemaVersion);
  * @property {string} AppId - Identifier for the app. Should match the name of the game in the database.
  * @property {string} AppVersion - The current version of the app.
  * @property {string} [AppBranch] - The current branch of the app. Sent as condition under OGDSchemaVersion.V1_0.
- * @property {string} ClientLogVersion - Client logging version
+ * @property {string|number} ClientLogVersion - The version of the app's logging events, set by the OGDLogger constructor
  * @property {string} SchemaVersion - Event schema version this logger emits
+ * @property {string} Endpoint - The log.php that events are sent to
  */
 
 export const OGDLogVersion = "opengamedata";
@@ -56,8 +57,9 @@ export const OGDLogConsts = {
     AppId: "mashopolis",
     AppVersion: "0.1.0",
     AppBranch: null,
-    ClientLogVersion: "v0.1.1",
-    SchemaVersion: OGDSchemaVersion.V1_0
+    ClientLogVersion: null,
+    SchemaVersion: OGDSchemaVersion.V1_0,
+    Endpoint: OGDLogEndpoint
 };
 
 Object.seal(OGDLogConsts);
