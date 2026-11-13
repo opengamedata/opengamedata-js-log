@@ -139,6 +139,18 @@ export class OGDLogger {
     }
 
     /**
+     * Sends events to the echo.php next to the current endpoint, which answers with how
+     * each event was read instead of storing it. Turn on debug to see the answer.
+     * Additionally triggers a rebuild of the OGD endpoint.
+     *
+     * @param {boolean} echo
+     */
+    setEcho(echo) {
+        OGDLogConsts.Echo = echo;
+        this._endpoint = BuildOGDUrl();
+    }
+
+    /**
      * Configures settings for the logger modules
      * @param {SettingsFlags} settings
      */
