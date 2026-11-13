@@ -68,9 +68,13 @@ export function EscapeJSONString(text) {
  * @returns {string} generates the Open Game Data uri from information in ./LogConsts
  */
 export function BuildOGDUrl() {
+    const endpoint = OGDLogConsts.Echo
+        ? OGDLogConsts.Endpoint.replace(/[^/]*$/, "echo.php")
+        : OGDLogConsts.Endpoint;
+
     if (OGDLogConsts.SchemaVersion !== OGDSchemaVersion.V0_1) {
         // log.php reads the rest of the v1.0 session fields from the request body, see BuildOGDSessionParams
-        return OGDLogConsts.Endpoint.concat("?game_id=", OGDLogConsts.AppId.toUpperCase(), "&schema_version=", OGDSchemaVersion.V1_0);
+        return endpoint.concat("?game_id=", OGDLogConsts.AppId.toUpperCase(), "&schema_version=", OGDSchemaVersion.V1_0);
     }
 
     let params = [
@@ -87,7 +91,7 @@ export function BuildOGDUrl() {
         ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
     ];
 
-    return OGDLogConsts.Endpoint.concat(...params); // base for the logging endpoint
+    return endpoint.concat(...params); // base for the logging endpoint
 }
 
 /**
