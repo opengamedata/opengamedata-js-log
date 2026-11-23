@@ -7,7 +7,7 @@
  * @author Alex Grabowski <ajgrabowski@wisc.edu>
  *   @version 0.1.0
  */
-import { OGDLogConsts, OGDLogEndpoint, OGDLogVersion, SessionConsts } from "./LogConsts";
+import { OGDLogConsts, OGDLogEndpoint, OGDLogVersion, OGDSchemaVersion, SessionConsts } from "./LogConsts";
 
 /**
  *  a helper function used to calculate a piece of the uuid
@@ -71,8 +71,14 @@ export function BuildOGDUrl() {
     let params = [
         "?app_id=",
         OGDLogConsts.AppId.toUpperCase(), //done automatically to force convention
-        "&app_version=",
-        OGDLogConsts.AppVersion,
+        // source_version mirrors game_version: this library only logs events the game itself produced
+        ...(OGDLogConsts.SchemaVersion === OGDSchemaVersion.V0_1
+            ? ["&app_version=", OGDLogConsts.AppVersion]
+            : [
+                "&game_version=", encodeURIComponent(OGDLogConsts.AppVersion),
+                "&source_version=", encodeURIComponent(OGDLogConsts.AppVersion),
+                "&schema_version=", OGDSchemaVersion.V1_0
+            ]),
         ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),

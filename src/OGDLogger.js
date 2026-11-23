@@ -7,7 +7,7 @@
  *   @author Alex Grabowski <ajgrabowski@wisc.edu>
  *   @version 1.0.0
  */
-import { SessionConsts, OGDLogConsts } from "./LogConsts";
+import { SessionConsts, OGDLogConsts, OGDSchemaVersion } from "./LogConsts";
 import { BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
 import { InitializeFirebase, LogFirebaseEvent } from "./OGDLog.Firebase";
 
@@ -79,6 +79,28 @@ export class OGDLogger {
             SessionConsts.UserData = userData;
             this._endpoint = BuildOGDUrl();
         }
+    }
+
+    /**
+     * Sets the event schema version this logger emits.
+     * Pass OGDSchemaVersion.V0_1 to stay on the old schema.
+     * Additionally triggers a rebuild of the OGD endpoint.
+     *
+     * @param {OGDSchemaVersion} schemaVersion - the schema version to emit
+     */
+    setSchemaVersion(schemaVersion) {
+        if (OGDLogConsts.SchemaVersion !== schemaVersion) {
+            OGDLogConsts.SchemaVersion = schemaVersion;
+            this._endpoint = BuildOGDUrl();
+        }
+    }
+
+    /**
+     * Returns the event schema version this logger is currently emitting.
+     * @returns {OGDSchemaVersion} the schema version currently being emitted
+     */
+    getSchemaVersion() {
+        return OGDLogConsts.SchemaVersion;
     }
 
     /**
