@@ -41,7 +41,7 @@ Object.freeze(OGDSchemaVersion);
  * @typedef OGDLogConsts
  * @property {string} AppId - Identifier for the app. Should match the name of the game in the database.
  * @property {string} AppVersion - The current version of the app.
- * @property {string} [AppBranch] - The current branch of the app.
+ * @property {string} [AppBranch] - The current branch of the app. Sent as condition under OGDSchemaVersion.V1_0.
  * @property {string} ClientLogVersion - Client logging version
  * @property {string} SchemaVersion - Event schema version this logger emits
  */
