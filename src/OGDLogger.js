@@ -11,7 +11,15 @@ import { SessionConsts, OGDLogConsts, OGDSchemaVersion } from "./LogConsts";
 import { BuildOGDSessionParams, BuildOGDUrl, EscapeJSONString, UUIDint } from "./LogUtils";
 import { InitializeFirebase, LogFirebaseEvent } from "./OGDLog.Firebase";
 
-const xhttp = new XMLHttpRequest();
+// same as the Unity package; delays in milliseconds
+const FlushFailureDelay = 400;
+const RepeatedFailureDelay = 200;
+const ReconnectDelay = 10000;
+const EndpointFailureCountCap = 10;
+const EndpointFailureCountReset = 6;
+
+const RequestTimeout = 30000;
+const MaxBatchSize = 100;
 
 /**
  * @param {number} number
@@ -19,6 +27,19 @@ const xhttp = new XMLHttpRequest();
  */
 function NumberToStringPadLeft(number, digits) {
     return Math.round(number).toString().padStart(digits, "0");
+}
+
+/**
+ * Base64-encodes the UTF-8 bytes of the text, since btoa only accepts Latin-1 characters
+ * @param {string} text
+ */
+function Base64EncodeUTF8(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return btoa(binary);
 }
 
 /**
@@ -56,6 +77,8 @@ export class OGDLogger {
         /** @private @type {boolean} */ this._flushing = false;
         /** @private @type {object[]} */ this._logQueue = [];
         this._submittedEventCount = 0;
+        this._submittedEndpoint = null;
+        this._failureCount = 0;
 
         this._gameState = undefined;
         this._gameSegment = undefined;
@@ -138,7 +161,7 @@ export class OGDLogger {
             this.setSettings(this._settings | SettingsFlags.Debug);
         } else {
             // @ts-ignore
-            this.setSettings(this._settings | ~SettingsFlags.Debug);
+            this.setSettings(this._settings & ~SettingsFlags.Debug);
         }
     }
 
@@ -259,7 +282,7 @@ export class OGDLogger {
         }
 
         this._logQueue.push(eventData);
-        if (typeof this._flushCallback == "undefined") {
+        if (!this._flushing && typeof this._flushCallback == "undefined") {
             this._flushCallback = setTimeout(() => this.flush(), 0);
         }
 
@@ -272,19 +295,38 @@ export class OGDLogger {
      * Flush the current logging queue to the database and handle the response
      */
     flush() {
+        clearTimeout(this._flushCallback);
         this._flushCallback = undefined;
 
         if (this._flushing || this._logQueue.length <= 0) {
             return;
         }
 
+        // a batch that failed is sent again unchanged, so events logged since then go in the next one
+        if (this._submittedEventCount <= 0) {
+            this._submittedEventCount = Math.min(this._logQueue.length, MaxBatchSize);
+            // the URL has the session and user ids, which can change before a retry
+            this._submittedEndpoint = this._endpoint;
+        }
+        const batch = this._logQueue.slice(0, this._submittedEventCount);
+
+        let data;
+        try {
+            data = EscapeJSONString(JSON.stringify(batch));
+            if (this._settings & SettingsFlags.Base64Encode) {
+                data = Base64EncodeUTF8(data);
+            }
+        } catch (e) {
+            // dropping the whole batch keeps one bad event from blocking everything logged after it
+            console.error("[OGDLogger] Dropped events that could not be encoded: ", e);
+            this._logQueue.splice(0, this._submittedEventCount);
+            this._submittedEventCount = 0;
+            this.flush();
+            return;
+        }
+
         this._flushing = true;
 
-        this._submittedEventCount = this._logQueue.length;
-        let data = EscapeJSONString(JSON.stringify(this._logQueue));
-        if (this._settings & SettingsFlags.Base64Encode) {
-            data = btoa(data);
-        }
         // under v1.0 the session fields go first, read as they are when the batch is sent
         const toPost = BuildOGDSessionParams(this._gameConfiguration, this._platform) + "data=" + encodeURIComponent(data);
 
@@ -292,14 +334,16 @@ export class OGDLogger {
         if ((this._settings & SettingsFlags.Debug) != 0) {
             console.log(
                 "[DEBUG OGDLogger] current batch: ",
-                JSON.stringify(this._logQueue),
+                JSON.stringify(batch),
                 "\nab to post to:",
-                this._endpoint
+                this._submittedEndpoint
             );
         }
 
+        const xhttp = new XMLHttpRequest();
         // @ts-ignore
-        xhttp.open("POST", this._endpoint);
+        xhttp.open("POST", this._submittedEndpoint);
+        xhttp.timeout = RequestTimeout;
         xhttp.setRequestHeader(
             "Content-Type",
             "application/x-www-form-urlencoded"
@@ -312,7 +356,7 @@ export class OGDLogger {
 
                 const status = xhttp.status;
                 
-                if (status === 0 || (status >= 200 && status < 400)) {
+                if (status >= 200 && status < 400) {
                     if ((this._settings & SettingsFlags.Debug) != 0) {
                         console.log(
                             "[DEBUG OGDLogger:xhttp] Great success\n",
@@ -321,16 +365,39 @@ export class OGDLogger {
                         );
                     }
                     this._logQueue.splice(0, this._submittedEventCount);
+                    this._submittedEventCount = 0;
+                    this._failureCount = 0;
+                } else if (status >= 400 && status < 500 && status !== 408 && status !== 429) {
+                    // sending a batch the server rejected again won't help, unless it timed out or was rate limited
+                    console.error(
+                        "[OGDLogger] Dropped events the server rejected with status: ",
+                        status,
+                        xhttp.responseText.slice(0, 200)
+                    );
+                    this._logQueue.splice(0, this._submittedEventCount);
+                    this._submittedEventCount = 0;
+                    this._failureCount = 0;
                 } else {
                     console.error(
                         "[OGDLogger] XMLHttpRequest returned error status: ",
                         status
                     );
+                    // status 0 means there was no response at all (offline, timed out), which counts double
+                    this._failureCount += status === 0 ? 2 : 1;
                 }
 
-                //if we have built up some events while flushing, keep flushing
-                if (this._logQueue.length >= 0) {
+                if (this._logQueue.length <= 0) {
+                    return;
+                }
+
+                if (this._failureCount == 0) {
                     this.flush();
+                } else if (this._failureCount >= EndpointFailureCountCap) {
+                    this._failureCount = EndpointFailureCountReset;
+                    this._flushCallback = setTimeout(() => this.flush(), ReconnectDelay);
+                } else {
+                    const delay = FlushFailureDelay + (this._failureCount - 1) * RepeatedFailureDelay;
+                    this._flushCallback = setTimeout(() => this.flush(), delay);
                 }
             }
         };

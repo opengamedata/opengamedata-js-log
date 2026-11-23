@@ -11,25 +11,26 @@ import { OGDLogConsts, OGDLogEndpoint, OGDLogVersion, OGDSchemaVersion, SessionC
 
 /**
  *  a helper function used to calculate a piece of the uuid
- *  @param {number} uuid - uniquie user id
+ *  @param {string} uuid - uniquie user id
  *  @param {number} input - number to be used; i.e. date section
- *  @param {number} multiply - multiplier to be used in funciton
+ *  @param {number} multiply - a power of 10, which sets how many digits the section takes
  *  @returns a section
  */
 function UUIDAccumulate(uuid, input, multiply) {
-    return uuid * multiply + ((input | 0) % multiply);
+    return uuid + ((input | 0) % multiply).toString().padStart(Math.log10(multiply), "0");
 }
 
 /**
- * @returns a 17-digit unique identifier using the current datetime.
+ * @returns a 17-digit unique identifier using the current datetime, as a string, since a number can't hold
+ * 17 digits exactly
  */
 export function UUIDint() {
-    let uuid = 0;
+    let uuid = "";
 
     let now = new Date();
 
     uuid = UUIDAccumulate(uuid, now.getFullYear(), 100);
-    uuid = UUIDAccumulate(uuid, now.getMonth(), 100);
+    uuid = UUIDAccumulate(uuid, now.getMonth() + 1, 100);
     uuid = UUIDAccumulate(uuid, now.getDate(), 100);
     uuid = UUIDAccumulate(uuid, now.getHours(), 100);
     uuid = UUIDAccumulate(uuid, now.getMinutes(), 100);
@@ -76,9 +77,15 @@ export function BuildOGDUrl() {
     let params = [
         "?app_id=",
         OGDLogConsts.AppId.toUpperCase(), //done automatically to force convention
-        "&app_version=",
-        OGDLogConsts.AppVersion,
-        ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        // source_version mirrors game_version: this library only logs events the game itself produced
+        ...(legacy
+            ? ["&app_version=", OGDLogConsts.AppVersion]
+            : [
+                "&game_version=", encodeURIComponent(OGDLogConsts.AppVersion),
+                "&source_version=", encodeURIComponent(OGDLogConsts.AppVersion),
+                "&schema_version=", OGDSchemaVersion.V1_0
+            ]),
+        ...(OGDLogConsts.AppBranch ? ["&app_branch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
