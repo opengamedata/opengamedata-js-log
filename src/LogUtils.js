@@ -79,7 +79,7 @@ export function BuildOGDUrl() {
                 "&source_version=", encodeURIComponent(OGDLogConsts.AppVersion),
                 "&schema_version=", OGDSchemaVersion.V1_0
             ]),
-        ...(OGDLogConsts.AppBranch ? ["&appbranch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
+        ...(OGDLogConsts.AppBranch ? ["&app_branch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
         OGDLogConsts.ClientLogVersion.toString(),
         "&session_id=",
