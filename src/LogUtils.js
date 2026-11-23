@@ -7,7 +7,7 @@
  * @author Alex Grabowski <ajgrabowski@wisc.edu>
  *   @version 0.1.0
  */
-import { OGDLogConsts, OGDLogEndpoint, OGDLogVersion, OGDSchemaVersion, SessionConsts } from "./LogConsts";
+import { OGDLogConsts, OGDLogVersion, OGDSchemaVersion, SessionConsts } from "./LogConsts";
 
 /**
  *  a helper function used to calculate a piece of the uuid
@@ -71,7 +71,7 @@ export function EscapeJSONString(text) {
 export function BuildOGDUrl() {
     if (OGDLogConsts.SchemaVersion !== OGDSchemaVersion.V0_1) {
         // log.php reads the rest of the v1.0 session fields from the request body, see BuildOGDSessionParams
-        return OGDLogEndpoint.concat("?game_id=", OGDLogConsts.AppId.toUpperCase(), "&schema_version=", OGDSchemaVersion.V1_0);
+        return OGDLogConsts.Endpoint.concat("?game_id=", OGDLogConsts.AppId.toUpperCase(), "&schema_version=", OGDSchemaVersion.V1_0);
     }
 
     let params = [
@@ -87,14 +87,14 @@ export function BuildOGDUrl() {
             ]),
         ...(OGDLogConsts.AppBranch ? ["&app_branch=", encodeURIComponent(OGDLogConsts.AppBranch)] : []),
         "&log_version=",
-        OGDLogConsts.ClientLogVersion.toString(),
+        encodeURIComponent(OGDLogConsts.ClientLogVersion),
         "&session_id=",
         SessionConsts.SessionId.toString(),
         ...(SessionConsts.UserId ? ["&user_id=", encodeURIComponent(SessionConsts.UserId)] : []),
         ...(SessionConsts.UserData ? ["&user_data=", encodeURIComponent(SessionConsts.UserData)] : []),
     ];
 
-    return OGDLogEndpoint.concat(...params); // base for the logging endpoint
+    return OGDLogConsts.Endpoint.concat(...params); // base for the logging endpoint
 }
 
 /**
@@ -110,7 +110,7 @@ export function BuildOGDSessionParams(gameConfiguration = undefined, platform = 
 
     let params = [
         "log_version=",
-        OGDLogConsts.ClientLogVersion.toString(),
+        encodeURIComponent(OGDLogConsts.ClientLogVersion),
         // source_version mirrors game_version: this library only logs events the game itself produced
         "&game_version=",
         encodeURIComponent(OGDLogConsts.AppVersion),
